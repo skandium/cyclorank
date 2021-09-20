@@ -1,0 +1,6 @@
+city_polygons/
+full_maps/
+extracted_maps/
+results/
+.DS_Store
+__pycache__/
