@@ -23,10 +23,10 @@ cities = {
         "geofabrik_path": "europe/belgium-latest.osm.pbf",
         "osm_id": 2404021
     },
-    "Prague": {
-        "geofabrik_path": "europe/czech-republic-latest.osm.pbf,",
-        "osm_id": 439840
-    },
+    # "Prague": {
+    #     "geofabrik_path": "europe/czech-republic-latest.osm.pbf,",
+    #     "osm_id": 439840
+    # },
     "Copenhagen": {
         "geofabrik_path": "europe/denmark-latest.osm.pbf",
         "osm_id": 2192363
@@ -37,7 +37,7 @@ cities = {
     },
     "Berlin": {
         "geofabrik_path": "europe/germany/berlin-latest.osm.pbf",
-        "osm_id": None
+        "osm_id": 62422
     },
     "Budapest": {
         "geofabrik_path": "europe/hungary-latest.osm.pbf",
