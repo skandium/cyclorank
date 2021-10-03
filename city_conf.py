@@ -1,111 +1,168 @@
-cities = {
-    "Tallinn": {
-        "geofabrik_path": "europe/estonia-latest.osm.pbf",
-        "osm_id": 2164745
-    },
-    "Helsinki": {
-        "geofabrik_path": "europe/finland-latest.osm.pbf",
-        "osm_id": 34914
-    },
-    "Amsterdam": {
-        "geofabrik_path": "europe/netherlands-latest.osm.pbf",
-        "osm_id": 271110
-    },
-    "Bucharest": {
-        "geofabrik_path": "europe/romania-latest.osm.pbf",
-        "osm_id": 377733
-    },
-    "Vienna": {
-        "geofabrik_path": "europe/austria-latest.osm.pbf",
-        "osm_id": 109166
-    },
-    "Brussels": {
-        "geofabrik_path": "europe/belgium-latest.osm.pbf",
-        "osm_id": 2404021
-    },
-    # "Prague": {
-    #     "geofabrik_path": "europe/czech-republic-latest.osm.pbf,",
-    #     "osm_id": 439840
-    # },
-    "Copenhagen": {
-        "geofabrik_path": "europe/denmark-latest.osm.pbf",
-        "osm_id": 2192363
-    },
-    "Paris": {
-        "geofabrik_path": "europe/france/ile-de-france-latest.osm.pbf",
-        "osm_id": 7444
-    },
-    "Berlin": {
-        "geofabrik_path": "europe/germany/berlin-latest.osm.pbf",
-        "osm_id": 62422
-    },
-    "Budapest": {
-        "geofabrik_path": "europe/hungary-latest.osm.pbf",
-        "osm_id": 1244004
-    },
-    "Dublin": {
-        "geofabrik_path": "europe/ireland-and-northern-ireland-latest.osm.pbf",
-        "osm_id": 1109531
-    },
-    "Rome": {
-        "geofabrik_path": "europe/italy/centro-latest.osm.pbf",
-        "osm_id": 41485
-    },
-    "Riga": {
-        "geofabrik_path": "europe/latvia-latest.osm.pbf",
-        "osm_id": 13048688
-    },
-    "Vilnius": {
-        "geofabrik_path": "europe/lithuania-latest.osm.pbf",
-        "osm_id": 1529146
-    },
-    "Lisbon": {
-        "geofabrik_path": "europe/portugal-latest.osm.pbf",
-        "osm_id": 5400890
-    },
-    "Bratislava": {
-        "geofabrik_path": "europe/slovakia-latest.osm.pbf",
-        "osm_id": 1702499
-    },
-    "Ljubljana": {
-        "geofabrik_path": "europe/slovenia-latest.osm.pbf",
-        "osm_id": 1675898
-    },
-    "Madrid": {
-        "geofabrik_path": "europe/spain-latest.osm.pbf",
-        "osm_id": 5326784
-    },
-    "Stockholm": {
-        "geofabrik_path": "europe/sweden-latest.osm.pbf",
-        "osm_id": 398021
-    },
-    "Sofia": {
-        "geofabrik_path": "europe/bulgaria-latest.osm.pbf",
-        "osm_id": 4283101
-    },
-    "Zagreb": {
-        "geofabrik_path": "europe/croatia-latest.osm.pbf",
-        "osm_id": 3168167
-    },
-    "Nicosia": {
-        "geofabrik_path": "europe/cyprus-latest.osm.pbf",
-        "osm_id": 2628521
-    },
-    # TODO get Athens admin ID???
-    # "Athens": {
-    #     "geofabrik_path": "europe/greece-latest.osm.pbf",
-    #     "osm_id": 377733
-    # },
-    "Luxembourg": {
-        "geofabrik_path": "europe/luxembourg-latest.osm.pbf",
-        "osm_id": 407489
-    },
-    "Valletta": {
-        "geofabrik_path": "europe/malta-latest.osm.pbf",
-        "osm_id": 7510580
-    },
-    "Warsaw": {
-        "geofabrik_path": "europe/poland/mazowieckie-latest.osm.pbf",
-        "osm_id": 336075
-    }
+city_mappings = {
+    # TODO Athens get id
+    # TODO Wuppertal, Leipzig failing? Las_Palmas
+    'europe/austria-latest.osm.pbf': [{'Vienna': {'osm_id': 109166}}],
+    'europe/belgium-latest.osm.pbf': [{'Brussels': {'osm_id': 2404021}},
+                                      {'Antwerp': {'osm_id': 59518}}],
+    'europe/bulgaria-latest.osm.pbf': [{'Sofia': {'osm_id': 4283101}},
+                                       {'Plovdiv': {'osm_id': 1955801}},
+                                       {'Varna': {'osm_id': 1404291}}],
+    'europe/croatia-latest.osm.pbf': [{'Zagreb': {'osm_id': 3168167}}],
+    'europe/cyprus-latest.osm.pbf': [{'Nicosia': {'osm_id': 2628521}}],
+    'europe/czech-republic-latest.osm.pbf': [{'Prague': {'osm_id': 439840}},
+                                             {'Brno': {'osm_id': 438171}}],
+    'europe/denmark-latest.osm.pbf': [{'Copenhagen': {'osm_id': 2192363}},
+                                      {'Aarhus': {'osm_id': 1784663}}],
+    'europe/estonia-latest.osm.pbf': [{'Tallinn': {'osm_id': 2164745}}],
+    'europe/finland-latest.osm.pbf': [{'Helsinki': {'osm_id': 34914}}],
+    'europe/france-latest.osm.pbf': [{'Paris': {'osm_id': 7444}},
+                                     {'Marseille': {'osm_id': 76469}},
+                                     {'Lyon': {'osm_id': 120965}},
+                                     {'Toulouse': {'osm_id': 35738}},
+                                     {'Nice': {'osm_id': 170100, 'centre': (43.7009358, 7.2683912)}},
+                                     {'Nantes': {'osm_id': 59874}}],
+    'europe/germany-latest.osm.pbf': [{'Berlin': {'osm_id': 62422}},
+                                      {'Hamburg': {'osm_id': 62782, 'centre': (53.550341, 10.000654)}},
+                                      {'Munich': {'osm_id': 62428}},
+                                      {'Cologne': {'osm_id': 62578}},
+                                      {'Frankfurt': {'osm_id': 62400}},
+                                      {'Stuttgart': {'osm_id': 2793104}},
+                                      {'Dusseldorf': {'osm_id': 62539}},
+                                      # {'Leipzig': {'osm_id': 62649}},
+                                      {'Dortmund': {'osm_id': 1829065}},
+                                      {'Essen': {'osm_id': 62713}},
+                                      {'Bremen': {'osm_id': 62559, 'centre': (53.0758196, 8.8071646)}},
+                                      {'Dresden': {'osm_id': 191645}},
+                                      {'Hanover': {'osm_id': 59418}},
+                                      {'Nuremberg': {'osm_id': 62780}},
+                                      {'Duisburg': {'osm_id': 62456}},
+                                      {'Bochum': {'osm_id': 62644}},
+                                      # {'Wuppertal': {'osm_id': 62478}},
+                                      {'Bielefeld': {'osm_id': 62646}},
+                                      {'Bonn': {'osm_id': 62508}},
+                                      {'Munster': {'osm_id': 62591}},
+                                      {'Karlsruhe': {'osm_id': 62518}},
+                                      {'Mannheim': {'osm_id': 62691}}],
+    # 'europe/great-britain-latest.osm.pbf': [{'London': {'osm_id': 65606}},
+    #                                         {'Birmingham': {'osm_id': 162378, 'centre': (52.4796992, -1.9026911)}},
+    #                                         {''}],
+    # TODO add UK cities
+    'europe/hungary-latest.osm.pbf': [{'Budapest': {'osm_id': 1244004}}],
+    'europe/iceland-latest.osm.pbf': [{'Reykjavik': {'osm_id': 2580605, 'centre': (64.145981, -21.9422367)}}],
+    'europe/ireland-and-northern-ireland-latest.osm.pbf': [{'Dublin': {'osm_id': 1109531}}],
+    'europe/italy-latest.osm.pbf': [{'Rome': {'osm_id': 41485}},
+                                    {'Milan': {'osm_id': 44915}},
+                                    {'Turin': {'osm_id': 43992}},
+                                    {'Naples': {'osm_id': 40767}},
+                                    {'Palermo': {'osm_id': 39513}},
+                                    {'Genoa': {'osm_id': 44875}},
+                                    {'Bologna': {'osm_id': 43172}},
+                                    {'Florence': {'osm_id': 42602}},
+                                    {'Bari': {'osm_id': 41038}},
+                                    {'Catania': {'osm_id': 39230}}],
+    'europe/latvia-latest.osm.pbf': [{'Riga': {'osm_id': 13048688}}],
+    'europe/lithuania-latest.osm.pbf': [{'Vilnius': {'osm_id': 1529146}}],
+    'europe/luxembourg-latest.osm.pbf': [{'Luxembourg': {'osm_id': 407489}}],
+    'europe/malta-latest.osm.pbf': [{'Valletta': {'osm_id': 7510580}}],
+    'europe/netherlands-latest.osm.pbf': [{'Amsterdam': {'osm_id': 271110}},
+                                          {'Rotterdam': {'osm_id': 1411101}},
+                                          {'Hague': {'osm_id': 192736}},
+                                          {'Utrecht': {'osm_id': 1433619}}],
+    'europe/norway-latest.osm.pbf': [{'Oslo': {'osm_id': 406091, 'centre': (59.9133301, 10.7389701)}}],
+    'europe/poland-latest.osm.pbf': [{'Warsaw': {'osm_id': 336075}},
+                                     {'Krakow': {'osm_id': 2768921}},
+                                     {'Lodz': {'osm_id': 2907537}},
+                                     {'Wroclaw': {'osm_id': 2805691}},
+                                     {'Poznan': {'osm_id': 2989158}},
+                                     {'Gdansk': {'osm_id': 2597485}},
+                                     {'Szczecin': {'osm_id': 404940}},
+                                     {'Bydgoszcz': {'osm_id': 2723342}},
+                                     {'Lublin': {'osm_id': 2904798}}],
+    'europe/portugal-latest.osm.pbf': [{'Lisbon': {'osm_id': 5400890}}],
+    'europe/romania-latest.osm.pbf': [{'Bucharest': {'osm_id': 377733}},
+                                      {'Iasi': {'osm_id': 1207838}},
+                                      {'Timisoara': {'osm_id': 6927733}},
+                                      {'Cluj-Napoca': {'osm_id': 3277038}},
+                                      {'Constanta': {'osm_id': 10487782}},
+                                      {'Craiova': {'osm_id': 9624263}},
+                                      {'Galati': {'osm_id': 10487103, 'centre': (45.4338215, 28.0549395)}}],
+    'europe/slovakia-latest.osm.pbf': [{'Bratislava': {'osm_id': 1702499}}],
+    'europe/slovenia-latest.osm.pbf': [{'Ljubljana': {'osm_id': 1675898}}],
+    'europe/spain-latest.osm.pbf': [{'Madrid': {'osm_id': 5326784}},
+                                    {'Barcelona': {'osm_id': 347950}},
+                                    {'Valencia': {'osm_id': 344953}},
+                                    {'Seville': {'osm_id': 342563}},
+                                    {'Zaragoza': {'osm_id': 345740}},
+                                    {'Malaga': {'osm_id': 340746}},
+                                    {'Murcia': {'osm_id': 340611}},
+                                    {'Palma': {'osm_id': 2174951, 'centre': (39.5695818, 2.6500745)}},
+                                    # {'Las_Palmas': {'osm_id': 340783, 'centre': (28.1288694, -15.4349015)}},
+                                    {'Bilbao': {'osm_id': 339549}},
+                                    {'Alicante': {'osm_id': 342792, 'centre': (38.3436365, -0.4881708)}},
+                                    {'Cordoba': {'osm_id': 343207, 'centre': (37.8845813, -4.7760138)}}],
+    'europe/sweden-latest.osm.pbf': [{'Stockholm': {'osm_id': 398021}},
+                                     {'Malmo': {'osm_id': 10663667}},
+                                     {'Gothenburg': {'osm_id': 935611, 'centre': (57.710083, 11.9727685)}}],
+    'europe/switzerland-latest.osm.pbf': [{'Zurich': {'osm_id': 1682248}},
+                                          {'Geneva': {'osm_id': 1685488}},
+                                          {'Basel': {'osm_id': 1683619}},
+                                          {'Lausanne': {'osm_id': 1685018, 'centre': (46.5218269, 6.6327025)}},
+                                          {'Bern': {'osm_id': 1682378, 'centre': (46.9482713, 7.4514512)}}]
+    # 'europe/greece-latest.osm.pbf': [{'Thessaloniki': {'osm_id': 11948133}}]
 }
+
+# country_to_cities = {
+#     'europe/austria-latest.osm.pbf': [{'Vienna': 109166}],
+#     'europe/belgium-latest.osm.pbf': [{'Brussels': 2404021}, {'Antwerp': 59518}],
+#     'europe/bulgaria-latest.osm.pbf': [{'Sofia': 4283101}, {'Plovdiv': 1955801}, {'Varna': 1404291}],
+#     'europe/croatia-latest.osm.pbf': [{'Zagreb': 3168167}],
+#     'europe/cyprus-latest.osm.pbf': [{'Nicosia': 2628521}],
+#     'europe/czech-republic-latest.osm.pbf': [{'Prague': 439840}, {'Brno': 438171}],
+#     'europe/denmark-latest.osm.pbf': [{'Copenhagen': 2192363}, {'Aarhus': 1784663}],
+#     'europe/estonia-latest.osm.pbf': [{'Tallinn': 2164745}],
+#     'europe/finland-latest.osm.pbf': [{'Helsinki': 34914}],
+#     'europe/france-latest.osm.pbf': [{'Paris': 7444}, {'Marseille': 76469}, {'Lyon': 120965}, {'Toulouse': 35738},
+#                                      {'Nice': 170100}, {'Nantes': 59874}],
+#     # 'europe/france/ile-de-france-latest.osm.pbf': [{'Paris': 7444}],
+#     # 'europe/france/provence-alpes-cote-d-azur-latest.osm.pbf': [{'Marseille': 76469}],
+#     'europe/germany-latest.osm.pbf': [{'Berlin': 62422}, {'Hamburg': 62782}, {'Munich': 62428}, {'Cologne': 62578},
+#                                       {'Frankfurt': 62400}, {'Stuttgart': 2793104}, {'Dusseldorf': 62539},
+#                                       {'Leipzig': 62649}, {'Dortmund': 1829065}, {'Essen': 62713}, {'Bremen': 62559},
+#                                       {'Dresden': 191645}, {'Hanover': 59418}, {'Nuremberg': 62780},
+#                                       {'Duisburg': 62456}, {'Bochum': 62644}, {'Wuppertal': 62478},
+#                                       {'Bielefeld': 62646}, {'Bonn': 62508}, {'Munster': 62591}, {'Karlsruhe': 62518},
+#                                       {'Mannheim': 62691}],
+#     # 'europe/germany/berlin-latest.osm.pbf': [{'Berlin': 62422}],
+#     # 'europe/germany/hamburg-latest.osm.pbf': [{'Hamburg': 62782}],
+#     # 'europe/germany/bayern-latest.osm.pbf': [{'Munich': 62428}],
+#     # 'europe/germany/nordrhein-westfalen/koeln-regbez-latest.osm.pbf': [{'Cologne': 62578}],
+#     'europe/hungary-latest.osm.pbf': [{'Budapest': 1244004}],
+#     'europe/ireland-and-northern-ireland-latest.osm.pbf': [{'Dublin': 1109531}],
+#     'europe/italy-latest.osm.pbf': [{'Rome': 41485}, {'Milan': 44915}, {'Turin': 43992}, {'Naples': 40767},
+#                                     {'Palermo': 39513}, {'Genoa': 44875}, {'Bologna': 43172}, {'Florence': 42602},
+#                                     {'Bari': 41038}, {'Catania': 39230}],
+#     # 'europe/italy/centro-latest.osm.pbf': [{'Rome': 41485}],
+#     # 'europe/italy/nord-ovest-latest.osm.pbf': [{'Milan': 44915}, {'Turin': 43992}],
+#     # 'europe/italy/sud-latest.osm.pbf': [{'Naples': 40767}],
+#     'europe/latvia-latest.osm.pbf': [{'Riga': 13048688}],
+#     'europe/lithuania-latest.osm.pbf': [{'Vilnius': 1529146}],
+#     'europe/luxembourg-latest.osm.pbf': [{'Luxembourg': 407489}],
+#     'europe/malta-latest.osm.pbf': [{'Valletta': 7510580}],
+#     'europe/netherlands-latest.osm.pbf': [{'Amsterdam': 271110}, {'Rotterdam': 1411101}, {'Hague': 192736},
+#                                           {'Utrecht': 1433619}],
+#     'europe/norway-latest.osm.pbf': [{'Oslo': 406091}],
+#     'europe/poland-latest.osm.pbf': [{'Warsaw': 336075}, {'Krakow': 2768921}, {'Lodz': 2907537}, {'Wroclaw': 2805691},
+#                                      {'Poznan': 2989158}, {'Gdansk': 2597485}, {'Szczecin': 404940},
+#                                      {'Bydgoszcz': 2723342}, {'Lublin': 2904798}],
+#     'europe/portugal-latest.osm.pbf': [{'Lisbon': 5400890}],
+#     'europe/romania-latest.osm.pbf': [{'Bucharest': 377733}, {'Iasi': 1207838}, {'Timisoara': 6927733},
+#                                       {'Cluj-Napoca': 3277038}, {'Constanta': 10487782}, {'Craiova': 9624263},
+#                                       {'Galati': 10487103}],
+#     'europe/slovakia-latest.osm.pbf': [{'Bratislava': 1702499}],
+#     'europe/slovenia-latest.osm.pbf': [{'Ljubljana': 1675898}],
+#     'europe/spain-latest.osm.pbf': [{'Madrid': 5326784}, {'Barcelona': 347950}, {'Valencia': 344953},
+#                                     {'Seville': 342563}, {'Zaragoza': 345740}, {'Malaga': 340746}, {'Murcia': 340611},
+#                                     {'Palma': 2174951}, {'Las Palmas': 340783}, {'Bilbao': 339549},
+#                                     {'Alicante': 342792}, {'Cordoba': 343207}],
+#     'europe/sweden-latest.osm.pbf': [{'Stockholm': 398021}, {'Malmo': 10663667}]
+# }

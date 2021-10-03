@@ -190,4 +190,4 @@ if __name__ == '__main__':
     osmfile = sys.argv[1]
     city_name = sys.argv[2]
 
-    exit(main(osmfile, city_name, decay=True))
+    exit(main(osmfile, city_name, decay=False))

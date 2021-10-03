@@ -91,6 +91,7 @@ merged["overall_rank"] = merged["overall_score"].rank(ascending=False).astype(in
 
 final = merged[
     ["city_name", "area_km2", "total_road_length", "cycle_road_share", "cycle_track_share", "rank_cycle_road_share",
-     "rank_cycle_track_share", "rank_cycle_road_share_decayed", "rank_cycle_track_share_decayed", "overall_rank"]]
+     "rank_cycle_track_share", "rank_cycle_road_share_decayed", "rank_cycle_track_share_decayed",
+     "overall_rank"]].round(3)
 
 final.sort_values("overall_rank").to_csv("final_results.csv", index=False)
