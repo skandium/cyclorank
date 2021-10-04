@@ -1,7 +1,7 @@
 import json
 import pandas as pd
 
-from city_conf import cities
+from city_conf import city_mappings
 
 from shapely.geometry import Point, shape
 from geoflow.utils import stopwatch
@@ -30,34 +30,38 @@ def find_polygon_area(geojson):
 
 
 city_records = []
-for city_name in cities:
-    try:
-        with open(f"results/{city_name}.json", "r") as f:
-            city_record = json.load(f)
+for country_map in city_mappings:
+    for city in city_mappings[country_map]:
+        city_name = list(city.keys())[0]
+        try:
+            with open(f"results/{city_name}.json", "r") as f:
+                city_record = json.load(f)
 
-        with open(f"city_polygons/{city_name.lower()}.geojson") as f:
-            city_geojson = json.load(f)
+            with open(f"city_polygons/{city_name.lower()}.geojson") as f:
+                city_geojson = json.load(f)
 
-        city_record["area_km2"] = find_polygon_area(city_geojson)
-        city_records.append(city_record)
-    except:
-        continue
+            city_record["area_km2"] = find_polygon_area(city_geojson)
+            city_records.append(city_record)
+        except:
+            continue
 
 df = pd.DataFrame(city_records)
 
 city_records_with_decay = []
-for city_name in cities:
-    try:
-        with open(f"results/{city_name}_decay.json", "r") as f:
-            city_record = json.load(f)
+for country_map in city_mappings:
+    for city in city_mappings[country_map]:
+        city_name = list(city.keys())[0]
+        try:
+            with open(f"results/{city_name}_decay.json", "r") as f:
+                city_record = json.load(f)
 
-        with open(f"city_polygons/{city_name.lower()}.geojson") as f:
-            city_geojson = json.load(f)
+            with open(f"city_polygons/{city_name.lower()}.geojson") as f:
+                city_geojson = json.load(f)
 
-        city_record["area_km2"] = find_polygon_area(city_geojson)
-        city_records_with_decay.append(city_record)
-    except:
-        continue
+            city_record["area_km2"] = find_polygon_area(city_geojson)
+            city_records_with_decay.append(city_record)
+        except:
+            continue
 
 df_decay = pd.DataFrame(city_records_with_decay)
 

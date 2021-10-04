@@ -11,7 +11,6 @@ Use [Nomatim](https://nominatim.openstreetmap.org/ui/details.html?osmtype=R&osmi
 
 ## Run analytics
 `python get_osmium_data.py extracted_maps/tallinn.pbf Tallinn`
-
 `python download_and_extract_maps.py`
 `python get_city_polygons.py`
 `python run_map_analysis.py (without decay)`

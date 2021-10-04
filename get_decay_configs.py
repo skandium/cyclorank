@@ -1,9 +1,10 @@
 import numpy as np
 import pickle
 import json
+import os
 import matplotlib.pyplot as plt
 
-from city_conf import cities
+from city_conf import city_mappings
 
 WEIGHT_AT_UPPER_THRESHOLD = 0.1
 
@@ -22,18 +23,24 @@ def derive_exponential_decay_params(dists):
     }
 
 
-for city_name in cities:
-    print(city_name)
-    with open(f"results/{city_name}_distances.pkl", "rb") as f:
-        dists = pickle.load(f)
+for country_map in city_mappings:
+    for city in city_mappings[country_map]:
+        city_name = list(city.keys())[0]
+        if not (os.path.exists(f"results/{city_name}_distances.pkl") and os.path.exists(
+                f"results/{city_name}_decay_conf.json")):
+            print(f"{city_name} - working")
+            with open(f"results/{city_name}_distances.pkl", "rb") as f:
+                dists = pickle.load(f)
 
-    decay_conf = derive_exponential_decay_params(dists)
-    with open(f"results/{city_name}_decay_conf.json", "w") as f:
-        json.dump(decay_conf, f)
+            decay_conf = derive_exponential_decay_params(dists)
+            with open(f"results/{city_name}_decay_conf.json", "w") as f:
+                json.dump(decay_conf, f)
 
-    plt.hist(dists, bins=100)
-    plt.axvline(x=decay_conf["lower_threshold"], color="red")
-    plt.axvline(x=decay_conf["upper_threshold"], color="red")
-    plt.title(city_name)
-    plt.savefig(f"results/{city_name}_distance_plot.png")
-    plt.close()
+            plt.hist(dists, bins=100)
+            plt.axvline(x=decay_conf["lower_threshold"], color="red")
+            plt.axvline(x=decay_conf["upper_threshold"], color="red")
+            plt.title(city_name)
+            plt.savefig(f"results/{city_name}_distance_plot.png")
+            plt.close()
+        else:
+            print(f"{city_name} - skipped")
