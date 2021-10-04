@@ -23,32 +23,12 @@ def extract_map(city_name, relation_id, full_map_path):
         f"docker run -it -w /wkd -v $(pwd):/wkd osmium-caller:latest osmium extract -p extracted_maps/{city_name}_boundary.pbf full_maps/{full_map_path} -o extracted_maps/{city_name}.pbf",
         shell=True)
 
-    print("Removing boundary file")
     if os.path.exists(f"extracted_maps/{city_name}.pbf"):
+        print("Removing boundary file")
         subprocess.run(f"rm extracted_maps/{city_name}_boundary.pbf", shell=True)
 
 
 if __name__ == "__main__":
-    # cities = {"Nicosia": {
-    #     "geofabrik_path": "europe/cyprus-latest.osm.pbf",
-    #     "osm_id": 2628521
-    # }}
-
-    # for i, city_name in enumerate(cities):
-    #     try:
-    #         if os.path.exists(f"extracted_maps/{city_name}.pbf"):
-    #             print(f"Skipping {city_name} as it exists already")
-    #             continue
-    #
-    #         print(f"Extracting map for {city_name}")
-    #         full_map_path = download_map(cities[city_name]["geofabrik_path"])
-    #         if cities[city_name]["osm_id"]:
-    #             extract_map(city_name, cities[city_name]["osm_id"], full_map_path)
-    #     except KeyboardInterrupt:
-    #         raise
-    #     except:
-    #         continue
-
     for country_map in country_to_cities:
         try:
             missing_cities = []
@@ -62,27 +42,17 @@ if __name__ == "__main__":
                 print(f"Map: {country_map}")
                 print(f"Missing cities: {missing_cities}")
                 full_map_path = download_map(country_map)
+                # full_map_path = "greece-latest.osm.pbf"
 
                 for missing_city in missing_cities:
                     for missing_city_name in missing_city:
                         osm_id = missing_city[missing_city_name]["osm_id"]
                         extract_map(missing_city_name, osm_id, full_map_path=full_map_path)
 
-                print("Removing country map")
-                subprocess.run(f"rm full_maps/{full_map_path}", shell=True)
+                # print("Removing country map")
+                # subprocess.run(f"rm full_maps/{full_map_path}", shell=True)
         except KeyboardInterrupt:
             raise
         except Exception as e:
             print(e)
             continue
-
-            # print(missing_city_name, osm_id)
-            # print("Extracting ")
-            # osm_id = list(miss)
-            # extract_map(missing_city_name, cities[city_name]["osm_id"], full_map_path)
-            #         print(f"Skipping {city_name} as it exists already")
-
-            # print(f"Extracting map for {city_name}")
-            # full_map_path = download_map(cities[city_name]["geofabrik_path"])
-            # if cities[city_name]["osm_id"]:
-            #     extract_map(city_name, cities[city_name]["osm_id"], full_map_path)
