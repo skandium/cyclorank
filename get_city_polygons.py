@@ -14,13 +14,20 @@ for country_map in city_mappings:
                     print("Downloading")
                     city_osm_id = city[city_name]["osm_id"]
                     r = requests.get(f"http://polygons.openstreetmap.fr/get_geojson.py?id={city_osm_id}&params=0")
-                    city_polygon = r.json()
-                    with open(f"city_polygons/{city_name.lower()}.geojson", "w") as f:
-                        json.dump(city_polygon, f)
-                    time.sleep(3)
+                    city_geojson = r.json()
+                    time.sleep(3)  # Have mercy on endpoint
                 else:
                     print("Exists - skipping")
             else:
-                print("Centre exists - skipping")
+                centre_coordinates = city["centre"]
+                city_geojson = {
+                    "type": "GeometryCollection",
+                    "geometries": [
+                        {"type": "Point",
+                         "coordinates": [centre_coordinates[0], centre_coordinates[1]]}]}
+
+            with open(f"city_polygons/{city_name.lower()}.geojson", "w") as f:
+                json.dump(city_geojson, f)
+
         except Exception as e:
             print(f"Error: {e}")

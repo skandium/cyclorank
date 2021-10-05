@@ -41,8 +41,8 @@ if __name__ == "__main__":
             if missing_cities:
                 print(f"Map: {country_map}")
                 print(f"Missing cities: {missing_cities}")
-                full_map_path = download_map(country_map)
-                # full_map_path = "greece-latest.osm.pbf"
+                # full_map_path = download_map(country_map)
+                full_map_path = country_map.split("/")[-1]
 
                 for missing_city in missing_cities:
                     for missing_city_name in missing_city:
