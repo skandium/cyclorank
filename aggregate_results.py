@@ -33,6 +33,7 @@ city_records = []
 for country_map in city_mappings:
     for city in city_mappings[country_map]:
         city_name = list(city.keys())[0]
+        osm_id = city[city_name]["osm_id"]
         try:
             with open(f"results/{city_name}.json", "r") as f:
                 city_record = json.load(f)
@@ -40,7 +41,7 @@ for country_map in city_mappings:
             with open(f"city_polygons/{city_name.lower()}.geojson") as f:
                 city_geojson = json.load(f)
 
-            city_record["area_km2"] = find_polygon_area(city_geojson)
+            city_record["osm_id"] = osm_id
             city_records.append(city_record)
         except:
             continue
@@ -94,8 +95,8 @@ merged["overall_score"] = merged["cycle_road_share"] * merged["cycle_track_share
 merged["overall_rank"] = merged["overall_score"].rank(ascending=False).astype(int)
 
 final = merged[
-    ["city_name", "area_km2", "total_road_length", "cycle_road_share", "cycle_track_share", "rank_cycle_road_share",
-     "rank_cycle_track_share", "rank_cycle_road_share_decayed", "rank_cycle_track_share_decayed",
-     "overall_rank"]].round(3)
+    ["city_name", "osm_id", "area_km2", "total_road_length", "cycle_road_share", "cycle_track_share",
+     "rank_cycle_road_share", "rank_cycle_track_share", "rank_cycle_road_share_decayed",
+     "rank_cycle_track_share_decayed", "overall_rank"]].round(3)
 
 final.sort_values("overall_rank").to_csv("final_results.csv", index=False)

@@ -1,39 +1,29 @@
 # CycloRank
 
-I develop a ranking of European cities by their cycling road infrastructure quality, using OpenStreetMap road network
-data.
-
 ## Motivation
 
 I live in Tallinn, a cosy northern EU capital known for its innovative digital solutions. I like to cycle both for
-recreation and commuting. Unfortunately, a thing that Tallinn is also known for, at least anecdotally, is its lack of
-proper bike infrastructure. That's why the recent
-[announcement](https://www.tallinn.ee/eng/greencapital/Uudis-Tallinn-announced-as-the-European-Green-Capital-of-2023?filter_otsing_uudis_rubriik_id=421)
-of Tallinn as the European Green Capital of 2023 came as a surprise to me. How can it be that anecdotally everyone I
-know is making fun of Tallinn's lack of bike lanes, and indeed, even a weekend trip to university town Tartu is enough
-to convince oneself that things could be better, but meanwhile Tallinn is renowned internationally for its bike efforts?
-
-I decided to try to use some of those novel digital tools that are available today, and quantify how competitive
-different European capitals are in terms of their biking infrastructure.
-
-# TODO rewrite motivation
+recreation and commuting. While Tallinn may be no Copenhagen in terms of cycling safety and convenience, I've often
+wondered how does it fare compared to other European cities. I decided to try to use some of today's novel digital tools
+to quantify how competitive different European capitals are in terms of their biking infrastructure.
 
 ## Methodology
 
 ### City selection
 
-The list includes all European Union cities with a population above 400000, plus similar cities from Norway,
-Switzerland, and United Kingdom, plus EU capitals. It is therefore a quasi-EU ranking.
+It is therefore a quasi-EU ranking, meaning that for the cities to be included, they needed to be either:
 
-### Metric calculation
+* Above 400K population from EU/Norway/Switzerland/UK
+* An EU capital
 
-Any compound index weighs separate metrics in an arbitrary way. The goal is to capture the measurement of the underlying
-semantic space - in this case, cyclability. Similar rankings include
-the [Copenhagenize Index](https://copenhagenizeindex.eu/) which gives subjective scores to on a variety of areas such as
-streetscape, culture and ambition. The city list comprises of 600 cities with 600 000 inhabitants worldwide. Another
-similar project is the [Bicycle Cities Index](https://www.coya.com/bike/index-2019) by digital insurance company Coya.
-The city list selection is subjective, however the measurement is done on a number of objective indicators sourced
-across the internet, such as road infrastructure, bicycle usage, number of fatalities etc.
+### Similar projects
+
+Other similar cyclability rankings include the [Copenhagenize Index](https://copenhagenizeindex.eu/) which gives
+subjective scores to on a variety of areas such as streetscape, culture and ambition. The city list comprises of 600
+cities with 600 000 inhabitants worldwide. Another similar project is
+the [Bicycle Cities Index](https://www.coya.com/bike/index-2019) by digital insurance company Coya. The city list
+selection is subjective, however the measurement is done on a number of objective indicators sourced across the
+internet, such as road infrastructure, bicycle usage, number of fatalities etc.
 
 There are a few reasons for developing yet another ranking:
 
@@ -43,9 +33,12 @@ There are a few reasons for developing yet another ranking:
 * Using a standardised methodology based on OpenStreetMap will allow to repeat the experiment at a different time and
   scale it to an arbitrary number of cities
 
+### Metric definitions
+
 Therefore, to measure the cyclability of cities, I look at the share of road infrastructure that has been marked
-explicitly as cycling friendly (either a bike lane or bike road) on OpenStreetMap. As designated bike roads can be
-considered qualitatively better, I also calculate their separate share.
+explicitly as cycling friendly (either a bike lane or bike road)
+on [OpenStreetMap](https://wiki.openstreetmap.org/wiki/Bicycle). As designated bike roads can be considered
+qualitatively better, I also calculate their separate share.
 
 The motivation behind measuring cycling path length is twofold: firstly, it has been shown to correlated to the
 popularity of cycling [\[1\]](https://www.sciencedirect.com/science/article/pii/S2214140519301033) and secondly, the
@@ -118,5 +111,10 @@ use [CyclOSM](https://www.cyclosm.org/#map=12/47.1842/-1.5288/cyclosm), which sh
 
 Firstly, comparing a top ranking city with a bottom one shows that indeed, the overall level of infrastructure is
 captured:
-Copenhagen vs Sofia
+
+### Copenhagen vs Sofia
+
+### Barcelona
+
+### Nantes
 

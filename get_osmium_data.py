@@ -10,7 +10,7 @@ import sys
 import pickle
 import json
 
-from shapely.geometry import shape
+from shapely.geometry import shape, Point
 
 from geoflow.utils import stopwatch
 from geoflow.spatial import haversine
@@ -54,20 +54,33 @@ class AmenityListHandler(o.SimpleHandler):
             # print(w.nodes)
             # print(w.nodes[0].lat)
             # raise ValueError
-            # TODO parse road length with discounting one-ways?
+
+            # How to modify distances:
+            # 2 way road with 2 way cycletrack or 2 cycletracks on both sides - 0.5 multiplier for cycleway
+            # 1 way road with 2 way cycletrack - 0.5 multiplier for road
+            # 2 way road with 1 way cycletrack - 0.5 multiplier for cycleway
+            # 2 way road with 2 lanes - no multipliers
+            # 2 way road with 1 lane - 0.5 multiplier on lane (???)
+            # 1 way road with 2 lanes - 0.5 mult for road
+            # 1 way road with 1 lane - 0.5 mult for both
+            # 1 way road, 2 way lane - 0.5 mult for road
+            # 1 way road with 1 lane - 0.5 mult for both
+
             road_length = o.geom.haversine_distance(w.nodes)
             first_node = w.nodes[0]
             road_distance_from_centroid = haversine(first_node.lat, first_node.lon, self.city_centroid.y,
                                                     self.city_centroid.x)
             self.road_distances_from_centroid.append(road_distance_from_centroid)
 
-            if self.decay_conf:
-                road_length = self.apply_weight_decay(road_length, road_distance_from_centroid)
-            self.total_road_length += road_length
-
             cycle_lane_length = 0
             cycle_track_length = 0
             cycle_road_misc_length = 0
+
+            # Discount oneways
+            oneway = False
+            if ("oneway" in w.tags) and (w.tags["oneway"] == "yes"):
+                road_length = 0.5 * road_length
+                oneway = True
 
             # Cycle lanes
             if (
@@ -87,9 +100,15 @@ class AmenityListHandler(o.SimpleHandler):
                     (("cycleway:right" in w.tags) and (w.tags["cycleway:right"] == "share_busway")) or
                     (("cycleway:left" in w.tags) and (w.tags["cycleway:left"] == "share_busway"))
             ):
-                cycle_lane_length = road_length
-                self.total_cycle_lane_length += cycle_lane_length
-                # cycle_road = True
+                if oneway:
+                    if ("oneway:bicycle" in w.tags) and (w.tags["oneway:bicycle"] == "no"):
+                        # TODO this fails for S1, B6, M3a, M3b
+                        # TODO if clause for M3a/M3b
+                        cycle_lane_length = road_length * 2
+                    else:
+                        cycle_lane_length = road_length
+                else:
+                    cycle_lane_length = road_length
 
             # Cycle tracks
             if (
@@ -114,9 +133,17 @@ class AmenityListHandler(o.SimpleHandler):
                             w.tags["cycleway:left"] == "share_busway")) or
                     (("oneway:bicycle" in w.tags) and (w.tags["oneway:bicycle"] == "yes"))
             ):
-                cycle_track_length = road_length
-                self.total_cycle_track_length += cycle_track_length
-                # cycle_road = True
+                if oneway:
+                    if ((w.tags["highway"] == "cycleway") and ("oneway" in w.tags) and (w.tags["oneway"] == "no")) or (
+                            ("cycleway:right:oneway" in w.tags) and (w.tags["cycleway:right:oneway"] == "no")) or (
+                            ("cycleway:left:oneway" in w.tags) and (w.tags["cycleway:left:oneway"] == "no")
+                    ):
+                        cycle_track_length = 2 * road_length
+                    else:
+                        cycle_track_length = road_length
+                else:
+                    cycle_track_length = road_length
+
             # Misc
             if (
                     # S6
@@ -125,9 +152,18 @@ class AmenityListHandler(o.SimpleHandler):
                     (("cyclestreet" in w.tags) and (w.tags["cyclestreet"] == "yes"))
             ):
                 cycle_road_misc_length = road_length
-                self.total_cycle_road_misc_length += cycle_road_misc_length
-                # cycle_road = True
+                # Skip discounting oneways for misc, due to the difficult corner cases
 
+            if self.decay_conf:
+                road_length = self.apply_weight_decay(road_length, road_distance_from_centroid)
+                cycle_lane_length = self.apply_weight_decay(cycle_lane_length, road_distance_from_centroid)
+                cycle_track_length = self.apply_weight_decay(cycle_track_length, road_distance_from_centroid)
+                cycle_road_misc_length = self.apply_weight_decay(cycle_road_misc_length, road_distance_from_centroid)
+
+            self.total_road_length += road_length
+            self.total_cycle_lane_length += cycle_lane_length
+            self.total_cycle_track_length += cycle_track_length
+            self.total_cycle_road_misc_length += cycle_road_misc_length
             self.total_cycling_road_length += cycle_lane_length + cycle_track_length + cycle_road_misc_length
 
     def way(self, w):
@@ -146,7 +182,7 @@ def main(osmfile, city_name, decay=False):
         city_json = json.load(f)
 
     city_polygon = shape(city_json)
-    city_centroid = city_polygon.centroid
+    city_centroid = Point((city_polygon.centroid.y, city_polygon.centroid.x))
 
     if decay:
         with open(f"results/{city_name}_decay_conf.json", "r") as f:
@@ -157,13 +193,14 @@ def main(osmfile, city_name, decay=False):
     handler = AmenityListHandler(city_centroid, decay_conf=decay_conf)
     handler.apply_file(osmfile, locations=True)
 
+    # Multiply distances by 2 to count both ways
     summary = {
         "city_name": city_name,
-        "total_road_length": handler.total_road_length / 1000,
-        "total_cycling_road_length": handler.total_cycling_road_length / 1000,
-        "total_cycle_lane_length": handler.total_cycle_lane_length / 1000,
-        "total_cycle_track_length": handler.total_cycle_track_length / 1000,
-        "total_cycle_road_misc_length": handler.total_cycle_road_misc_length / 1000,
+        "total_road_length": (2 * handler.total_road_length) / 1000,
+        "total_cycling_road_length": (2 * handler.total_cycling_road_length) / 1000,
+        "total_cycle_lane_length": (2 * handler.total_cycle_lane_length) / 1000,
+        "total_cycle_track_length": (2 * handler.total_cycle_track_length) / 1000,
+        "total_cycle_road_misc_length": (2 * handler.total_cycle_road_misc_length) / 1000,
         "parking_counter": handler.parking_counter
     }
 
