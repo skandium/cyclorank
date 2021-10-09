@@ -23,7 +23,7 @@ class AmenityListHandler(o.SimpleHandler):
         self.total_cycling_road_length = 0
         self.total_cycle_lane_length = 0
         self.total_cycle_track_length = 0
-        self.total_cycle_road_misc_length = 0
+        self.total_segregated_cycle_track_length = 0
 
         self.city_centroid = city_centroid
         self.road_distances_from_centroid = []
@@ -47,26 +47,28 @@ class AmenityListHandler(o.SimpleHandler):
         #     raise ValueError
         return adj_dist
 
+    def parse_tag(self, w, tag, tag_values):
+        if (tag in w.tags) and (w.tags[tag] in tag_values):
+            return True
+        else:
+            return False
+
+    # def parse_not_tag(self, w, tag, tag_values):
+    #     if (tag in w.tags) and (w.tags[tag] not in tag_values):
+    #         return True
+    #     else:
+    #         return False
+
     def parse_way_data(self, w):
         """Based on https://wiki.openstreetmap.org/wiki/Bicycle"""
-        if 'highway' in w.tags:
+        if "highway" in w.tags:
+            # print(w.tags)
             # print(w.id)
             # print(w.nodes)
             # print(w.nodes[0].lat)
             # raise ValueError
 
-            # How to modify distances:
-            # 2 way road with 2 way cycletrack or 2 cycletracks on both sides - 0.5 multiplier for cycleway
-            # 1 way road with 2 way cycletrack - 0.5 multiplier for road
-            # 2 way road with 1 way cycletrack - 0.5 multiplier for cycleway
-            # 2 way road with 2 lanes - no multipliers
-            # 2 way road with 1 lane - 0.5 multiplier on lane (???)
-            # 1 way road with 2 lanes - 0.5 mult for road
-            # 1 way road with 1 lane - 0.5 mult for both
-            # 1 way road, 2 way lane - 0.5 mult for road
-            # 1 way road with 1 lane - 0.5 mult for both
-
-            road_length = o.geom.haversine_distance(w.nodes)
+            highway_length = o.geom.haversine_distance(w.nodes)
             first_node = w.nodes[0]
             road_distance_from_centroid = haversine(first_node.lat, first_node.lon, self.city_centroid.y,
                                                     self.city_centroid.x)
@@ -74,97 +76,101 @@ class AmenityListHandler(o.SimpleHandler):
 
             cycle_lane_length = 0
             cycle_track_length = 0
-            cycle_road_misc_length = 0
+            segregated_track_length = 0
 
             # Discount oneways
-            oneway = False
-            if ("oneway" in w.tags) and (w.tags["oneway"] == "yes"):
-                road_length = 0.5 * road_length
-                oneway = True
+            if self.parse_tag(w, "oneway", ["yes"]):
+                highway_length = 0.5 * highway_length
 
             # Cycle lanes
             if (
                     # L1a, L1b, M1, M2a, M2b, M2c, B2
-                    (("cycleway" in w.tags) and (w.tags["cycleway"] == "lane")) or
+                    (self.parse_tag(w, "cycleway", ["lane", "opposite_lane"])) or
                     # L1a, L1b, L2, M1, M2a, M2d, M3b, S2
-                    (("cycleway:right" in w.tags) and (w.tags["cycleway:right"] == "lane")) or
+                    (self.parse_tag(w, "cycleway:right", ["lane", "opposite_lane"])) or
                     # L1a, L1b, M1, M2b, M2d, M3a
-                    (("cycleway:left" in w.tags) and (w.tags["cycleway:left"] == "lane")) or
+                    (self.parse_tag(w, "cycleway:left", ["lane", "opposite_lane"])) or
                     # L1a
-                    (("cycleway:both" in w.tags) and (w.tags["cycleway:both"] == "lane")) or
-                    # M3a
-                    (("cycleway" in w.tags) and (w.tags["cycleway"] == "opposite_lane")) or
+                    (self.parse_tag(w, "cycleway:both", ["lane", "opposite_lane"])) or
                     # B1
                     ("bicycle:lanes" in w.tags) or
-                    # B3
-                    (("cycleway:right" in w.tags) and (w.tags["cycleway:right"] == "share_busway")) or
-                    (("cycleway:left" in w.tags) and (w.tags["cycleway:left"] == "share_busway"))
+                    # B3 / other share_busway values
+                    (self.parse_tag(w, "cycleway",
+                                    ["share_busway", "opposite_share_busway", "shoulder", "shared_lane"])) or
+                    (self.parse_tag(w, "cycleway:right",
+                                    ["share_busway", "opposite_share_busway", "shoulder", "shared_lane"])) or
+                    (self.parse_tag(w, "cycleway:left",
+                                    ["share_busway", "opposite_share_busway", "shoulder", "shared_lane"])) or
+                    (self.parse_tag(w, "cycleway:both",
+                                    ["share_busway", "opposite_share_busway", "shoulder", "shared_lane"])) or
+                    # Sidewalks with explicit cycling
+                    (self.parse_tag(w, "sidewalk:both:bicycle", ["designated", "yes"])) or
+                    (self.parse_tag(w, "sidewalk:left:bicycle", ["designated", "yes"])) or
+                    (self.parse_tag(w, "sidewalk:right:bicycle", ["designated", "yes"])) or
+                    (self.parse_tag(w, "sidewalk:bicycle", ["designated", "yes"]))
             ):
-                if oneway:
-                    if ("oneway:bicycle" in w.tags) and (w.tags["oneway:bicycle"] == "no"):
-                        # TODO this fails for S1, B6, M3a, M3b
-                        # TODO if clause for M3a/M3b
-                        cycle_lane_length = road_length * 2
-                    else:
-                        cycle_lane_length = road_length
+                # Discount ways that do not have lane going both ways
+                if not (
+                        self.parse_tag(w, "cycleway", ["lane"]) or
+                        self.parse_tag(w, "cycleway:both", ["lane"]) or
+                        (self.parse_tag(w, "cycleway:right", ["lane"]) and self.parse_tag(w, "cycleway:left",
+                                                                                          ["lane"])) or
+                        (self.parse_tag(w, "cycleway:right", ["lane"]) and self.parse_tag(w, "cycleway:right:oneway",
+                                                                                          ["no"])) or
+                        (self.parse_tag(w, "cycleway:left", ["lane"]) and self.parse_tag(w, "cycleway:left:oneway",
+                                                                                         ["no"]))
+                ):
+                    cycle_lane_length = highway_length * 0.5
                 else:
-                    cycle_lane_length = road_length
+                    cycle_lane_length = highway_length
 
             # Cycle tracks
             if (
-                    # S5?
-                    ((w.tags["highway"] == "cycleway") and ("oneway" not in w.tags)) or
-                    # T1, T4, S2, S3, S4
-                    ((w.tags["highway"] == "cycleway") and ("oneway" in w.tags) and (w.tags["oneway"] == "yes")) or
-                    # T1, S3, S4
-                    (("cycleway" in w.tags) and w.tags["cycleway"] == "track") or
-                    # T2, T3
-                    ((w.tags["highway"] == "cycleway") and ("oneway" in w.tags) and (w.tags["oneway"] == "no")) or
-                    # T2, T3, T4
-                    (("cycleway:right" in w.tags) and w.tags["cycleway:right"] == "track") or
-                    (("cycleway:left" in w.tags) and w.tags["cycleway:left"] == "track") or
-                    # S3, S5, S7
-                    ((w.tags["highway"] in ["path", "footway", "cycleway"]) and ("bicycle" in w.tags) and (
-                            w.tags["bicycle"] == "designated")) or
-                    # B4, B5, B6
-                    (("cycleway:right" in w.tags) and (
-                            w.tags["cycleway:right"] == "share_busway")) or
-                    (("cycleway:left" in w.tags) and (
-                            w.tags["cycleway:left"] == "share_busway")) or
-                    (("oneway:bicycle" in w.tags) and (w.tags["oneway:bicycle"] == "yes"))
+                    (self.parse_tag(w, "cycleway", ["track", "opposite_track"])) or
+                    (self.parse_tag(w, "cycleway:both", ["track", "opposite_track"])) or
+                    (self.parse_tag(w, "cycleway:left", ["track", "opposite_track"])) or
+                    (self.parse_tag(w, "cycleway:right", ["track", "opposite_track"])) or
+                    (self.parse_tag(w, "highway", ["cycleway"])) or
+                    # (self.parse_tag(w, "highway", ["path", "footway", "cycleway"]) and self.parse_tag(w, "bicycle",
+                    #                                                                                   ["designated",
+                    #                                                                                    "yes"])) or
+                    (self.parse_tag(w, "cyclestreet", ["yes"])) or
+                    (self.parse_tag(w, "bicycle_road", ["yes"]))
+                    # (self.parse_not_tag(w, "sidewalk:both:bicycle", ["no"]) and self.parse_tag(w,
+                    #                                                                            "sidewalk:left:segregated",
+                    #                                                                            ["yes"])) or
+                    # (self.parse_not_tag(w, "sidewalk:left:bicycle", ["no"]) and self.parse_tag(w,
+                    #                                                                            "sidewalk:left:segregated",
+                    #                                                                            ["yes"])) or
+                    # (self.parse_not_tag(w, "sidewalk:right:bicycle", ["no"]) and self.parse_tag(w,
+                    #                                                                            "sidewalk:right:segregated",
+                    #                                                                            ["yes"]))
             ):
-                if oneway:
-                    if ((w.tags["highway"] == "cycleway") and ("oneway" in w.tags) and (w.tags["oneway"] == "no")) or (
-                            ("cycleway:right:oneway" in w.tags) and (w.tags["cycleway:right:oneway"] == "no")) or (
-                            ("cycleway:left:oneway" in w.tags) and (w.tags["cycleway:left:oneway"] == "no")
-                    ):
-                        cycle_track_length = 2 * road_length
-                    else:
-                        cycle_track_length = road_length
+                # Discount oneways
+                if (
+                        (self.parse_tag(w, "highway", ["cycleway"]) and self.parse_tag(w, "oneway", ["yes"])) or
+                        self.parse_tag(w, "oneway:bicycle", ["yes"]) or
+                        self.parse_tag(w, "cycleway:right:oneway", ["yes"]) or
+                        self.parse_tag(w, "cycleway:left:oneway", ["yes"])
+                ):
+                    cycle_track_length = 0.5 * highway_length
                 else:
-                    cycle_track_length = road_length
+                    cycle_track_length = highway_length
 
-            # Misc
-            if (
-                    # S6
-                    (("ramp:bicycle" in w.tags) and (
-                            w.tags["ramp:bicycle"] == "yes")) or
-                    (("cyclestreet" in w.tags) and (w.tags["cyclestreet"] == "yes"))
-            ):
-                cycle_road_misc_length = road_length
-                # Skip discounting oneways for misc, due to the difficult corner cases
+                if self.parse_tag(w, "segregated", ["yes"]):
+                    # print(w.id, w.tags)
+                    segregated_track_length = cycle_track_length
 
             if self.decay_conf:
-                road_length = self.apply_weight_decay(road_length, road_distance_from_centroid)
+                highway_length = self.apply_weight_decay(highway_length, road_distance_from_centroid)
                 cycle_lane_length = self.apply_weight_decay(cycle_lane_length, road_distance_from_centroid)
                 cycle_track_length = self.apply_weight_decay(cycle_track_length, road_distance_from_centroid)
-                cycle_road_misc_length = self.apply_weight_decay(cycle_road_misc_length, road_distance_from_centroid)
 
-            self.total_road_length += road_length
+            self.total_road_length += highway_length
             self.total_cycle_lane_length += cycle_lane_length
             self.total_cycle_track_length += cycle_track_length
-            self.total_cycle_road_misc_length += cycle_road_misc_length
-            self.total_cycling_road_length += cycle_lane_length + cycle_track_length + cycle_road_misc_length
+            self.total_segregated_cycle_track_length += segregated_track_length
+            self.total_cycling_road_length += cycle_lane_length + cycle_track_length
 
     def way(self, w):
         self.parse_way_data(w)
@@ -200,7 +206,7 @@ def main(osmfile, city_name, decay=False):
         "total_cycling_road_length": (2 * handler.total_cycling_road_length) / 1000,
         "total_cycle_lane_length": (2 * handler.total_cycle_lane_length) / 1000,
         "total_cycle_track_length": (2 * handler.total_cycle_track_length) / 1000,
-        "total_cycle_road_misc_length": (2 * handler.total_cycle_road_misc_length) / 1000,
+        "total_segregated_cycle_track_length": (2 * handler.total_segregated_cycle_track_length) / 1000,
         "parking_counter": handler.parking_counter
     }
 
@@ -219,7 +225,7 @@ def main(osmfile, city_name, decay=False):
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: python %s <osmfile> <city_name>" % sys.argv[0])
         sys.exit(-1)

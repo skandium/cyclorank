@@ -8,12 +8,12 @@ if __name__ == "__main__":
             city_name = list(city.keys())[0]
             try:
                 map_path = f"extracted_maps/{city_name.lower()}.pbf"
-                results_path = f"results/{city_name}_decayz.json"
+                results_path = f"results/{city_name}_decay.json"
                 if os.path.exists(results_path):
                     print(f"Skipping {city_name}")
                 else:
                     print(f"Working on {city_name}")
-                    main(map_path, city_name, decay=True)
+                    main(map_path, city_name, decay=False)
             except KeyboardInterrupt:
                 raise
             except Exception as e:

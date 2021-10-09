@@ -114,7 +114,11 @@ captured:
 
 ### Copenhagen vs Sofia
 
-### Barcelona
+### Nantes vs Barcelona
 
-### Nantes
+Nantes is an interesting outlier - it has the most bike road share out of any city, but is only 15th in the ranking by
+separated cycle tracks. Indeed, it visibly has predominently cycling lanes (marked by the dashed line), rather than
+separate cycleways.
 
+Contrasting this is Barcelona - anyone who's cycled there knows the convenience of their designated cycleways that have
+little overlap with car traffic. Indeed, this is apparent visually.
