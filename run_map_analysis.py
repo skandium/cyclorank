@@ -13,7 +13,7 @@ if __name__ == "__main__":
                     print(f"Skipping {city_name}")
                 else:
                     print(f"Working on {city_name}")
-                    main(map_path, city_name, decay=False)
+                    main(map_path, city_name, decay=True)
             except KeyboardInterrupt:
                 raise
             except Exception as e:

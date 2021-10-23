@@ -28,19 +28,6 @@ def call_osrm_route(start_point, end_point, vehicle_type):
     return {"distance": first_route["distance"], "duration": first_route["duration"]}
 
 
-# def analyse():
-#     import pandas as pd
-#
-#     bike = pd.read_json("/Users/martin/Desktop/fun/cyclorank/routing_results/Tallinn_bike.json")
-#
-#     car = pd.read_json("/Users/martin/Desktop/fun/cyclorank/routing_results/Tallinn_car.json")
-#
-#     merged = pd.merge(bike, car, suffixes=["_bike", "_car"], left_index=True, right_index=True)
-#
-#     distance_delta = (merged["distance_car"] / merged["distance_bike"]).median()
-#     duration_delta = (merged["duration_car"] / merged["duration_bike"]).median()
-
-
 if __name__ == "__main__":
     city_name = "Amsterdam"
     vehicle_type = "car"

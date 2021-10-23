@@ -8,12 +8,7 @@ from shapely.geometry import Point, shape
 from geoflow.utils import stopwatch
 from geoflow.spatial import haversine
 
-city_name = "amsterdam"
 
-with open(f"city_polygons/{city_name}.geojson") as f:
-    city_json = json.load(f)
-
-city_polygon = shape(city_json)
 
 NUM_POINTS = 1000
 NUM_ROUTES = 500
@@ -56,12 +51,21 @@ def sample_distributional_points_from_uniform(poly, uniform_points):
 
 
 if __name__ == "__main__":
-    points = random_points_within(city_polygon, NUM_POINTS)
-    routes = []
-    for i in range(NUM_ROUTES):
-        start_point = random.choice(points)
-        end_point = random.choice(points)
-        routes.append((float(start_point.y), float(start_point.x), float(end_point.y), float(end_point.x)))
+    # city_name = "amsterdam"
+    cities = ["Tallinn", "Helsinki"]
 
-    with open(f"routes/{city_name}.p", "wb") as f:
-        pickle.dump(routes, f)
+    for city_name in cities:
+        with open(f"../city_polygons/{city_name.lower()}.geojson") as f:
+            city_json = json.load(f)
+
+        city_polygon = shape(city_json)
+
+        points = random_points_within(city_polygon, NUM_POINTS)
+        routes = []
+        for i in range(NUM_ROUTES):
+            start_point = random.choice(points)
+            end_point = random.choice(points)
+            routes.append((float(start_point.y), float(start_point.x), float(end_point.y), float(end_point.x)))
+
+        with open(f"routes/{city_name}.p", "wb") as f:
+            pickle.dump(routes, f)
