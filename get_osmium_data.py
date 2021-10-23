@@ -31,6 +31,7 @@ class AmenityListHandler(o.SimpleHandler):
         self.parking_counter = 0
 
         self.decay_conf = decay_conf
+        self.way_ids = []
 
     def apply_weight_decay(self, road_distance, road_distance_from_centroid):
         effective_distance = np.minimum(np.maximum(road_distance_from_centroid - self.decay_conf["lower_threshold"], 0),
@@ -166,6 +167,9 @@ class AmenityListHandler(o.SimpleHandler):
                 cycle_lane_length = self.apply_weight_decay(cycle_lane_length, road_distance_from_centroid)
                 cycle_track_length = self.apply_weight_decay(cycle_track_length, road_distance_from_centroid)
 
+            if cycle_lane_length + cycle_track_length > 0:
+                self.way_ids.append(w.id)
+
             self.total_road_length += highway_length
             self.total_cycle_lane_length += cycle_lane_length
             self.total_cycle_track_length += cycle_track_length
@@ -222,6 +226,9 @@ def main(osmfile, city_name, decay=False):
         with open(f"results/{city_name}_distances.pkl", "wb") as f:
             pickle.dump(handler.road_distances_from_centroid, f)
 
+        with open(f"results/{city_name}_way_ids.pkl", "wb") as f:
+            pickle.dump(handler.way_ids, f)
+
     return 0
 
 
@@ -234,3 +241,4 @@ if __name__ == "__main__":
     city_name = sys.argv[2]
 
     exit(main(osmfile, city_name, decay=False))
+    # TODO investigate Berlin - something is off... Only account for cycle lanes and designated roads?
