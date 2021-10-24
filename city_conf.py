@@ -5,7 +5,7 @@ city_mappings = {
                                       {'Antwerp': {'osm_id': 59518, 'centre': (51.2602708, 4.382181448976495)}}],
     'europe/bulgaria-latest.osm.pbf': [{'Sofia': {'osm_id': 4283101, 'centre': (42.6978634, 23.3221789)}},
                                        {'Plovdiv': {'osm_id': 1955801, 'centre': (42.14390815, 24.742123302454544)}},
-                                       {'Varna': {'osm_id': 1437135, 'centre': (43.21324335, 27.61943526469872)}}],
+                                       {'Varna': {'osm_id': 1404291, 'centre': (43.2073873,27.9166653)}}],
     'europe/croatia-latest.osm.pbf': [{'Zagreb': {'osm_id': 3168167, 'centre': (45.8131847, 15.9771774)}}],
     'europe/cyprus-latest.osm.pbf': [{'Nicosia': {'osm_id': 2628521, 'centre': (35.1739302, 33.364726)}}],
     'europe/czech-republic-latest.osm.pbf': [

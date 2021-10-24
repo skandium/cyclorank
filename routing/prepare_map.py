@@ -63,7 +63,8 @@ if __name__ == "__main__":
     #         #     print(e)
     #         #     continue
 
-    cities = ["Tallinn", "Helsinki"]
+    # cities = ["Tallinn", "Helsinki", ""]
+    cities = ["Bucharest"]
     for city_name in cities:
         try:
             prepare_maps(city_name)

@@ -132,11 +132,12 @@ class AmenityListHandler(o.SimpleHandler):
                     (self.parse_tag(w, "cycleway:left", ["track", "opposite_track"])) or
                     (self.parse_tag(w, "cycleway:right", ["track", "opposite_track"])) or
                     (self.parse_tag(w, "highway", ["cycleway"])) or
-                    # (self.parse_tag(w, "highway", ["path", "footway", "cycleway"]) and self.parse_tag(w, "bicycle",
-                    #                                                                                   ["designated",
-                    #                                                                                    "yes"])) or
+                    (self.parse_tag(w, "highway", ["path", "footway"]) and self.parse_tag(w, "bicycle",
+                                                                                          ["designated",
+                                                                                           "yes"])) or
                     (self.parse_tag(w, "cyclestreet", ["yes"])) or
                     (self.parse_tag(w, "bicycle_road", ["yes"]))
+                    # TODO What about this leftover from CyclOSM?
                     # (self.parse_not_tag(w, "sidewalk:both:bicycle", ["no"]) and self.parse_tag(w,
                     #                                                                            "sidewalk:left:segregated",
                     #                                                                            ["yes"])) or
@@ -241,4 +242,3 @@ if __name__ == "__main__":
     city_name = sys.argv[2]
 
     exit(main(osmfile, city_name, decay=False))
-    # TODO investigate Berlin - something is off... Only account for cycle lanes and designated roads?
