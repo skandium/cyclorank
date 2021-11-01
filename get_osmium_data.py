@@ -31,7 +31,7 @@ class AmenityListHandler(o.SimpleHandler):
         self.parking_counter = 0
 
         self.decay_conf = decay_conf
-        self.way_ids = []
+        self.way_ids = {}
 
     def apply_weight_decay(self, road_distance, road_distance_from_centroid):
         effective_distance = np.minimum(np.maximum(road_distance_from_centroid - self.decay_conf["lower_threshold"], 0),
@@ -54,25 +54,27 @@ class AmenityListHandler(o.SimpleHandler):
         else:
             return False
 
-    # def parse_not_tag(self, w, tag, tag_values):
-    #     if (tag in w.tags) and (w.tags[tag] not in tag_values):
-    #         return True
-    #     else:
-    #         return False
-
     def parse_way_data(self, w):
         """Based on https://wiki.openstreetmap.org/wiki/Bicycle"""
         if "highway" in w.tags:
-            # print(w.tags)
-            # print(w.id)
-            # print(w.nodes)
-            # print(w.nodes[0].lat)
-            # raise ValueError
+            # if ((self.parse_tag(w, "sidewalk:both:bicycle", ["designated", "yes"])) or
+            #         (self.parse_tag(w, "sidewalk:left:bicycle", ["designated", "yes"])) or
+            #         (self.parse_tag(w, "sidewalk:right:bicycle", ["designated", "yes"])) or
+            #         (self.parse_tag(w, "sidewalk:bicycle", ["designated", "yes"]))):
+            #     print(w.id)
+
+            # if (self.parse_tag(w, "highway", ["path", "footway"]) and self.parse_tag(w, "bicycle",
+            #                                                                          ["designated",
+            #                                                                           "yes"
+            # ])):
 
             highway_length = o.geom.haversine_distance(w.nodes)
-            first_node = w.nodes[0]
-            road_distance_from_centroid = haversine(first_node.lat, first_node.lon, self.city_centroid.y,
-                                                    self.city_centroid.x)
+            road_lats = [n.lat for n in w.nodes]
+            road_lngs = [n.lon for n in w.nodes]
+            # TODO expose haversine
+            road_distances = haversine(road_lats, road_lngs, self.city_centroid.y,
+                                       self.city_centroid.x)
+            road_distance_from_centroid = np.median(road_distances)
             self.road_distances_from_centroid.append(road_distance_from_centroid)
 
             cycle_lane_length = 0
@@ -122,6 +124,7 @@ class AmenityListHandler(o.SimpleHandler):
                                                                                          ["no"]))
                 ):
                     cycle_lane_length = highway_length * 0.5
+                    # TODO is this kosher?
                 else:
                     cycle_lane_length = highway_length
 
@@ -134,7 +137,8 @@ class AmenityListHandler(o.SimpleHandler):
                     (self.parse_tag(w, "highway", ["cycleway"])) or
                     (self.parse_tag(w, "highway", ["path", "footway"]) and self.parse_tag(w, "bicycle",
                                                                                           ["designated",
-                                                                                           "yes"])) or
+                                                                                           # "yes"
+                                                                                           ])) or
                     (self.parse_tag(w, "cyclestreet", ["yes"])) or
                     (self.parse_tag(w, "bicycle_road", ["yes"]))
                     # TODO What about this leftover from CyclOSM?
@@ -160,16 +164,20 @@ class AmenityListHandler(o.SimpleHandler):
                     cycle_track_length = highway_length
 
                 if self.parse_tag(w, "segregated", ["yes"]):
-                    # print(w.id, w.tags)
                     segregated_track_length = cycle_track_length
+
+            if cycle_lane_length + cycle_track_length > 0:
+                self.way_ids[w.id] = {"raw_distance": cycle_lane_length + cycle_track_length,
+                                      "dist_from_centr": road_distance_from_centroid}
 
             if self.decay_conf:
                 highway_length = self.apply_weight_decay(highway_length, road_distance_from_centroid)
                 cycle_lane_length = self.apply_weight_decay(cycle_lane_length, road_distance_from_centroid)
                 cycle_track_length = self.apply_weight_decay(cycle_track_length, road_distance_from_centroid)
+                segregated_track_length = self.apply_weight_decay(segregated_track_length, road_distance_from_centroid)
 
             if cycle_lane_length + cycle_track_length > 0:
-                self.way_ids.append(w.id)
+                self.way_ids[w.id]["weighted_distance"] = cycle_lane_length + cycle_track_length
 
             self.total_road_length += highway_length
             self.total_cycle_lane_length += cycle_lane_length
@@ -183,8 +191,6 @@ class AmenityListHandler(o.SimpleHandler):
     def node(self, n):
         if ("amenity" in n.tags) and n.tags["amenity"] == "bicycle_parking":
             self.parking_counter += 1
-            # print(n.id)
-            # raise ValueError
 
 
 @stopwatch()
@@ -198,6 +204,7 @@ def main(osmfile, city_name, decay=False):
     if decay:
         with open(f"results/{city_name}_decay_conf.json", "r") as f:
             decay_conf = json.load(f)
+            print(f"Using decay conf: {decay_conf}")
     else:
         decay_conf = None
 
@@ -224,11 +231,11 @@ def main(osmfile, city_name, decay=False):
         with open(f"results/{city_name}.json", "w") as f:
             json.dump(summary, f)
 
-        with open(f"results/{city_name}_distances.pkl", "wb") as f:
-            pickle.dump(handler.road_distances_from_centroid, f)
+    with open(f"results/{city_name}_distances.pkl", "wb") as f:
+        pickle.dump(handler.road_distances_from_centroid, f)
 
-        with open(f"results/{city_name}_way_ids.pkl", "wb") as f:
-            pickle.dump(handler.way_ids, f)
+    with open(f"results/{city_name}_way_ids.pkl", "wb") as f:
+        pickle.dump(handler.way_ids, f)
 
     return 0
 
@@ -241,4 +248,4 @@ if __name__ == "__main__":
     osmfile = sys.argv[1]
     city_name = sys.argv[2]
 
-    exit(main(osmfile, city_name, decay=False))
+    exit(main(osmfile, city_name, decay=True))

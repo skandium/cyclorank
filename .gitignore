@@ -5,6 +5,6 @@ results/
 routing/map_bike
 routing/map_car
 routing/routes
-routing/router_results
+routing/routing_results
 .DS_Store
 __pycache__/
