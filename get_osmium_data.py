@@ -12,8 +12,23 @@ import json
 
 from shapely.geometry import shape, Point
 
-from geoflow.utils import stopwatch
-from geoflow.spatial import haversine
+
+def haversine(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees)
+    All args must be of equal length.
+    """
+    lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+
+    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0) ** 2
+
+    c = 2 * np.arcsin(np.sqrt(a))
+    km = 6371 * c
+    return km
 
 
 class AmenityListHandler(o.SimpleHandler):
@@ -31,7 +46,7 @@ class AmenityListHandler(o.SimpleHandler):
         self.parking_counter = 0
 
         self.decay_conf = decay_conf
-        self.way_ids = {}
+        # self.way_ids = {}
 
     def apply_weight_decay(self, road_distance, road_distance_from_centroid):
         effective_distance = np.minimum(np.maximum(road_distance_from_centroid - self.decay_conf["lower_threshold"], 0),
@@ -40,12 +55,7 @@ class AmenityListHandler(o.SimpleHandler):
         distance_weight = np.exp(
             self.decay_conf["decay_coef"] * effective_distance)
 
-        # print(road_distance)
-        # print(road_distance_from_centroid)
         adj_dist = distance_weight * road_distance
-        # print(adj_dist)
-        # if road_distance_from_centroid > 2:
-        #     raise ValueError
         return adj_dist
 
     def parse_tag(self, w, tag, tag_values):
@@ -57,21 +67,10 @@ class AmenityListHandler(o.SimpleHandler):
     def parse_way_data(self, w):
         """Based on https://wiki.openstreetmap.org/wiki/Bicycle"""
         if "highway" in w.tags:
-            # if ((self.parse_tag(w, "sidewalk:both:bicycle", ["designated", "yes"])) or
-            #         (self.parse_tag(w, "sidewalk:left:bicycle", ["designated", "yes"])) or
-            #         (self.parse_tag(w, "sidewalk:right:bicycle", ["designated", "yes"])) or
-            #         (self.parse_tag(w, "sidewalk:bicycle", ["designated", "yes"]))):
-            #     print(w.id)
-
-            # if (self.parse_tag(w, "highway", ["path", "footway"]) and self.parse_tag(w, "bicycle",
-            #                                                                          ["designated",
-            #                                                                           "yes"
-            # ])):
 
             highway_length = o.geom.haversine_distance(w.nodes)
             road_lats = [n.lat for n in w.nodes]
             road_lngs = [n.lon for n in w.nodes]
-            # TODO expose haversine
             road_distances = haversine(road_lats, road_lngs, self.city_centroid.y,
                                        self.city_centroid.x)
             road_distance_from_centroid = np.median(road_distances)
@@ -124,7 +123,6 @@ class AmenityListHandler(o.SimpleHandler):
                                                                                          ["no"]))
                 ):
                     cycle_lane_length = highway_length * 0.5
-                    # TODO is this kosher?
                 else:
                     cycle_lane_length = highway_length
 
@@ -136,21 +134,9 @@ class AmenityListHandler(o.SimpleHandler):
                     (self.parse_tag(w, "cycleway:right", ["track", "opposite_track"])) or
                     (self.parse_tag(w, "highway", ["cycleway"])) or
                     (self.parse_tag(w, "highway", ["path", "footway"]) and self.parse_tag(w, "bicycle",
-                                                                                          ["designated",
-                                                                                           # "yes"
-                                                                                           ])) or
+                                                                                          ["designated"])) or
                     (self.parse_tag(w, "cyclestreet", ["yes"])) or
                     (self.parse_tag(w, "bicycle_road", ["yes"]))
-                    # TODO What about this leftover from CyclOSM?
-                    # (self.parse_not_tag(w, "sidewalk:both:bicycle", ["no"]) and self.parse_tag(w,
-                    #                                                                            "sidewalk:left:segregated",
-                    #                                                                            ["yes"])) or
-                    # (self.parse_not_tag(w, "sidewalk:left:bicycle", ["no"]) and self.parse_tag(w,
-                    #                                                                            "sidewalk:left:segregated",
-                    #                                                                            ["yes"])) or
-                    # (self.parse_not_tag(w, "sidewalk:right:bicycle", ["no"]) and self.parse_tag(w,
-                    #                                                                            "sidewalk:right:segregated",
-                    #                                                                            ["yes"]))
             ):
                 # Discount oneways
                 if (
@@ -166,9 +152,9 @@ class AmenityListHandler(o.SimpleHandler):
                 if self.parse_tag(w, "segregated", ["yes"]):
                     segregated_track_length = cycle_track_length
 
-            if cycle_lane_length + cycle_track_length > 0:
-                self.way_ids[w.id] = {"raw_distance": cycle_lane_length + cycle_track_length,
-                                      "dist_from_centr": road_distance_from_centroid}
+            # if cycle_lane_length + cycle_track_length > 0:
+            #     self.way_ids[w.id] = {"raw_distance": cycle_lane_length + cycle_track_length,
+            #                           "dist_from_centr": road_distance_from_centroid}
 
             if self.decay_conf:
                 highway_length = self.apply_weight_decay(highway_length, road_distance_from_centroid)
@@ -176,8 +162,8 @@ class AmenityListHandler(o.SimpleHandler):
                 cycle_track_length = self.apply_weight_decay(cycle_track_length, road_distance_from_centroid)
                 segregated_track_length = self.apply_weight_decay(segregated_track_length, road_distance_from_centroid)
 
-            if cycle_lane_length + cycle_track_length > 0:
-                self.way_ids[w.id]["weighted_distance"] = cycle_lane_length + cycle_track_length
+            # if cycle_lane_length + cycle_track_length > 0:
+            #     self.way_ids[w.id]["weighted_distance"] = cycle_lane_length + cycle_track_length
 
             self.total_road_length += highway_length
             self.total_cycle_lane_length += cycle_lane_length
@@ -193,7 +179,6 @@ class AmenityListHandler(o.SimpleHandler):
             self.parking_counter += 1
 
 
-@stopwatch()
 def main(osmfile, city_name, decay=False):
     with open(f"city_polygons/{city_name.lower()}.geojson") as f:
         city_json = json.load(f)
@@ -234,8 +219,8 @@ def main(osmfile, city_name, decay=False):
     with open(f"results/{city_name}_distances.pkl", "wb") as f:
         pickle.dump(handler.road_distances_from_centroid, f)
 
-    with open(f"results/{city_name}_way_ids.pkl", "wb") as f:
-        pickle.dump(handler.way_ids, f)
+    # with open(f"results/{city_name}_way_ids.pkl", "wb") as f:
+    #     pickle.dump(handler.way_ids, f)
 
     return 0
 
